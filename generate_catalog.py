@@ -36,8 +36,9 @@ IDEAS = [
 ("Плед","Состав ткани, размер и уход"),
 ("Книга","Интересы читателя, язык, формат и наличие издания"),
 ("Органайзер","Размер, материал, удобство и назначение")]
-def page(title, description, body, canonical):
-    return f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{escape(title)}</title><meta name="description" content="{escape(description,quote=True)}"><link rel="canonical" href="{escape(canonical,quote=True)}"><style>body{{font:17px/1.65 system-ui;margin:0;background:#fffaf6;color:#211b36}}header,footer{{background:#211b36;color:white;padding:18px max(5%,calc((100% - 1050px)/2))}}header a,footer a{{color:white}}main{{max-width:1050px;margin:auto;padding:35px 20px 75px}}h1{{font-size:clamp(32px,5vw,52px);line-height:1.15}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}}article{{background:white;border:1px solid #eae3e5;border-radius:18px;padding:20px}}article h2{{font-size:21px}}.muted{{color:#676078}}a{{color:#98375c}}.tag{{display:inline-block;background:#f3e7f1;border-radius:20px;padding:3px 12px;font-size:13px}}li{{margin:8px 0}}</style></head><body><header><a href="./">🎁 Подарочный переполох</a> · <a href="./katalog.html">Каталог</a></header><main>{body}</main><footer>Идеи для выбора, не магазин. Цены и наличие проверяйте у продавца. Партнёрские ссылки будут отмечены, если появятся.</footer></body></html>'''
+def page(title, description, body, canonical, indexable=True):
+    robots = '' if indexable else '<meta name="robots" content="noindex,follow">'
+    return f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{escape(title)}</title>{robots}<meta name="description" content="{escape(description,quote=True)}"><link rel="canonical" href="{escape(canonical,quote=True)}"><style>body{{font:17px/1.65 system-ui;margin:0;background:#fffaf6;color:#211b36}}header,footer{{background:#211b36;color:white;padding:18px max(5%,calc((100% - 1050px)/2))}}header a,footer a{{color:white}}main{{max-width:1050px;margin:auto;padding:35px 20px 75px}}h1{{font-size:clamp(32px,5vw,52px);line-height:1.15}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}}article{{background:white;border:1px solid #eae3e5;border-radius:18px;padding:20px}}article h2{{font-size:21px}}.muted{{color:#676078}}a{{color:#98375c}}.tag{{display:inline-block;background:#f3e7f1;border-radius:20px;padding:3px 12px;font-size:13px}}li{{margin:8px 0}}</style></head><body><header><a href="./">🎁 Подарочный переполох</a> · <a href="./katalog.html">Каталог</a></header><main>{body}</main><footer>Идеи для выбора, не магазин. Цены и наличие проверяйте у продавца. Партнёрские ссылки будут отмечены, если появятся.</footer></body></html>'''
 paths = ["", "katalog.html", "podarki-dlya-uyuta.html", "podarki-lyubitelyam-tehniki.html", "podarki-dlya-tvorchestva.html", "kak-vybrat-podarok.html", "termokruzhka-ili-termos.html", "nakladnye-ili-vnutrikanalnye-naushniki.html", "nastolnaya-igra-ili-konstruktor.html", "provodnaya-ili-besprovodnaya-zaryadka.html"]
 
 # Editorial product-category landing pages. No unverified brands, prices or reviews.
@@ -90,9 +91,9 @@ for person,occasion,budget in product(PEOPLE,OCCASIONS,BUDGETS):
     chosen=IDEAS[(len(ps)+len(os)+len(bs))%len(IDEAS):]+IDEAS[:(len(ps)+len(os)+len(bs))%len(IDEAS)]
     cards="".join(f"<article><h2>{escape(name)}</h2><p>{escape(criteria)}</p><p class='muted'>Подходит только если отвечает интересам получателя.</p></article>" for name,criteria in chosen[:4])
     body=f"<p class='tag'>{escape(og)} · {escape(bg)}</p><h1>{escape(title)}</h1><p>{escape(pc)}. {escape(oc)}. {escape(bc)}.</p><h2>Что можно рассмотреть</h2><div class='grid'>{cards}</div><h2>Как выбрать</h2><ol><li>Уточните интересы и то, чем человек уже пользуется.</li><li>Сравните материалы, комплектацию и гарантию.</li><li>Проверьте актуальную стоимость с доставкой и условия возврата.</li></ol><p class='muted'>Это идеи категорий товаров, а не рейтинг конкретных моделей. Мы не заявляем о личном тестировании.</p><p><a href='./katalog.html'>← Все подборки</a></p>"
-    (ROOT/slug).write_text(page(title+" | Подарочный переполох",desc,body,BASE+slug),encoding="utf-8")
+    (ROOT/slug).write_text(page(title+" | Подарочный переполох",desc,body,BASE+slug,indexable=False),encoding="utf-8")
     links.append((slug,title))
-paths += [slug for slug,_ in links]
+# Combination pages stay browsable, but not indexed until they have distinct editorial content.
 sections=[]
 for ps,pt,_,_ in PEOPLE:
     sub=[(slug,title) for slug,title in links if slug.startswith("idei-"+ps+"-")]

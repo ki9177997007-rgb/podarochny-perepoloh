@@ -1,0 +1,52 @@
+name: Publish article to VK
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: 'Article title'
+        required: true
+        type: string
+      article_url:
+        description: 'Public article URL'
+        required: true
+        type: string
+      summary:
+        description: 'Short introduction'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    env:
+      VK_GROUP_ID: ${{ secrets.VK_GROUP_ID }}
+      VK_GROUP_TOKEN: ${{ secrets.VK_GROUP_TOKEN }}
+      TITLE: ${{ inputs.title }}
+      ARTICLE_URL: ${{ inputs.article_url }}
+      SUMMARY: ${{ inputs.summary }}
+    steps:
+      - name: Publish to VK community
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.parse, urllib.request
+          gid = os.environ.get("VK_GROUP_ID", "")
+          token = os.environ.get("VK_GROUP_TOKEN", "")
+          if not gid.isdigit() or not token:
+              raise SystemExit("Configure VK_GROUP_ID and VK_GROUP_TOKEN as GitHub Actions secrets")
+          url = os.environ["ARTICLE_URL"]
+          if not url.startswith("https://ki9177997007-rgb.github.io/podarochny-perepoloh/"):
+              raise SystemExit("Only links to the gift website are allowed")
+          message = "\n\n".join([os.environ["TITLE"], os.environ["SUMMARY"], url])
+          data = urllib.parse.urlencode({
+              "owner_id": "-" + gid, "from_group": 1,
+              "message": message, "v": "5.199",
+              "access_token": token
+          }).encode()
+          req = urllib.request.Request("https://api.vk.com/method/wall.post", data=data)
+          with urllib.request.urlopen(req, timeout=30) as resp:
+              result = json.load(resp)
+          if "error" in result:
+              raise SystemExit("VK rejected publication: " + str(result["error"].get("error_code")))
+          print("Published VK post ID:", result["response"]["post_id"])
+          PY

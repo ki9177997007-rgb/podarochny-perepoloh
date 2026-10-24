@@ -13,7 +13,7 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4
       - name: Verify API token is configured

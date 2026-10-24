@@ -43,7 +43,7 @@ jobs:
               "message": message, "v": "5.199",
               "access_token": token
           }).encode()
-          req = urllib.request.Request("https://api.vk.com/method/wall.post", data=data)
+          req = urllib.request.Request("https://api.vk.ru/method/wall.post", data=data)
           with urllib.request.urlopen(req, timeout=30) as resp:
               result = json.load(resp)
           if "error" in result:

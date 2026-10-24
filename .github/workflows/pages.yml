@@ -18,8 +18,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install motion renderer dependencies
+        run: python -m pip install --disable-pip-version-check pillow numpy
       - name: Generate gift catalogue
-        run: python3 generate_catalog.py
+        run: python generate_catalog.py
+      - name: Render original animated vertical video
+        run: python generate_motion.py
+      - name: Validate generated site
+        run: python verify_site.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -20,8 +20,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Generate gift catalogue
         run: python3 generate_catalog.py
-      - name: Generate short videos
-        run: python3 generate_shorts.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -8,7 +8,7 @@ import urllib.request
 BASE = "https://api.takprodam.ru/v2/publisher/"
 
 def get_sources():
-    token = os.environ.get("TAKPRODAM_API_TOKEN")
+    token = os.environ.get("TAKPRODAM_API_TOKEN", "").strip()
     if not token:
         raise RuntimeError("Set TAKPRODAM_API_TOKEN as a GitHub Actions secret or environment variable")
     req = urllib.request.Request(
@@ -32,6 +32,11 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except (RuntimeError, urllib.error.URLError) as exc:
-        print(f"Takprodam API check failed: {exc}", file=sys.stderr)
+    except urllib.error.HTTPError as exc:
+        print(f"Takprodam API HTTP status: {exc.code}", file=sys.stderr)
+        if exc.code == 403:
+            print("Access denied by Takprodam. Verify token origin and contact support about publisher API permissions.", file=sys.stderr)
+        sys.exit(1)
+    except (RuntimeError, urllib.error.URLError, ValueError) as exc:
+        print(f"Takprodam API check failed: {type(exc).__name__}", file=sys.stderr)
         sys.exit(1)

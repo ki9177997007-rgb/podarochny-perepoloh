@@ -49,7 +49,7 @@ jobs:
           from urllib.request import urlopen
           base = 'https://ki9177997007-rgb.github.io/podarochny-perepoloh/'
           checks = [
-              ('', b'Подарочный'.decode('utf-8').encode('utf-8')),
+              ('', 'Подарочный'.encode('utf-8')),
               ('sitemap.xml', b'<urlset'),
               ('robots.txt', b'Sitemap:'),
               ('tovar-powerbank.html', b'<title'),

@@ -42,3 +42,30 @@ jobs:
           path: .
       - id: deployment
         uses: actions/deploy-pages@v4
+      - name: Smoke test public Pages and SEO endpoints
+        run: |
+          python3 - <<'PY'
+          import time
+          from urllib.request import urlopen
+          base = 'https://ki9177997007-rgb.github.io/podarochny-perepoloh/'
+          checks = [
+              ('', b'Подарочный'.decode('utf-8').encode('utf-8')),
+              ('sitemap.xml', b'<urlset'),
+              ('robots.txt', b'Sitemap:'),
+              ('tovar-powerbank.html', b'<title'),
+          ]
+          for path, expected in checks:
+              url = base + path
+              for attempt in range(8):
+                  try:
+                      with urlopen(url, timeout=15) as response:
+                          body = response.read()
+                          if response.status != 200 or expected not in body:
+                              raise RuntimeError(f'Unexpected public content at {url}')
+                      print(f'PUBLIC OK: {url}')
+                      break
+                  except Exception as exc:
+                      if attempt == 7:
+                          raise RuntimeError(f'Public smoke test failed: {url}') from exc
+                      time.sleep(10)
+          PY

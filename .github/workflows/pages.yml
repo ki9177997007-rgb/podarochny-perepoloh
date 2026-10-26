@@ -25,8 +25,13 @@ jobs:
         run: python -m pip install --disable-pip-version-check pillow numpy
       - name: Generate gift catalogue
         run: python generate_catalog.py
-      - name: Install ffmpeg and ffprobe
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Ensure ffmpeg and ffprobe are available
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ffmpeg
+          fi
+          ffmpeg -version | head -n 1
       - name: Render original animated vertical video
         run: python generate_motion.py
       - name: Validate generated site
